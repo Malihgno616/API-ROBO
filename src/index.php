@@ -5,24 +5,71 @@ ini_set('display_startup_errors', 1);
 ini_set('charset', 'UTF-8');
 error_reporting(E_ALL);
 
-require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . "/../vendor/autoload.php";
+require_once __DIR__ . "/../model/robot.php";
 
 use FastRoute\RouteCollector;
 use function FastRoute\simpleDispatcher;
+use App\Robot\Robot;
 
 // Define as rotas
 $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/', function () {
-        echo "<h1 style='font-family: arial, Helvetica,sans-serif;'>API DE ROBÔS</h1>";
+        header('Content-Type: application/json; charset=UTF-8');
+        echo json_encode([
+            'status' => 'success',
+            'message' => 'Bem-vindo à API de Robôs!',
+            'description' => 'Esta API permite gerenciar robôs de forma simples e eficiente.',
+            'routes' => [
+                [
+                    'method' => 'GET',
+                    'path' => '/all-robots',
+                    'description' => 'Mostra todos os robôs.'
+                ],
+                [
+                    'method' => 'POST',
+                    'path' => '/robots/create',
+                    'description' => 'Cria um novo robô.'
+                ],
+                [
+                    'method' => 'GET',
+                    'path' => '/robots/{id}',
+                    'description' => 'Obtém detalhes de um robô específico.'
+                ],
+                [
+                    'method' => 'PUT',
+                    'path' => '/robots/{id}',
+                    'description' => 'Atualiza um robô existente.'
+                ],
+                [
+                    'method' => 'DELETE',
+                    'path' => '/robots/{id}',
+                    'description' => 'Remove um robô.'
+                ]
+                ]
+        ]);
     });
 
-    $r->addRoute('GET', '/welcome', 'welcome');
+    $r->addRoute('GET', '/all-robots', function () {
+        header('Content-Type: application/json; charset=UTF-8');
+        $robot = new Robot(1, "Robo1", "ModelX", 2023, "Red", "SN123456");
+        echo json_encode([
+            'status' => 'success',
+            'message' => 'Lista de todos os robôs.',
+            'data' => [
+                'id' => $robot->getId(),
+                'name' => $robot->getName(),
+                'model' => $robot->getModel(),
+                'year' => $robot->getYear(),
+                'color' => $robot->getColor(),
+                'serialNumber' => $robot->getSerialNumber(),
+                'isOn' => $robot->isOn(),
+                'batteryLevel' => $robot->getBatteryLevel()
+                ] 
+        ]);
+    });
+    
 });
-
-// Função chamada pela rota /welcome
-function welcome() {
-    echo "<h1>Welcome to the PHP application!\n</h1>";
-}
 
 // Captura a URI e o método HTTP
 $httpMethod = $_SERVER['REQUEST_METHOD'];
@@ -32,9 +79,9 @@ $uri = $_SERVER['REQUEST_URI'];
 if (false !== $pos = strpos($uri, '?')) {
     $uri = substr($uri, 0, $pos);
 }
+
 $uri = rawurldecode($uri);
 
-// Faz o dispatch
 $routeInfo = $dispatcher->dispatch($httpMethod, $uri);
 switch ($routeInfo[0]) {
     case FastRoute\Dispatcher::NOT_FOUND:
