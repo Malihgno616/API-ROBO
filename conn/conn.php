@@ -3,7 +3,7 @@
 class Conn {
     
     private $host = 'localhost';
-    private $db = 'robot_db';
+    private $db = 'robots_db';
     private $user = 'root';
     private $pass = '';
     private $charset = 'utf8mb4';

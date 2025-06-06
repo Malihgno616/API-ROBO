@@ -23,47 +23,6 @@ class Robot {
         $this->batteryLevel = 100; // Assume full battery on creation
     }
 
-    public function turnOn() {
-        if (!$this->isOn) {
-            $this->isOn = true;
-            echo "{$this->name} is now ON.\n";
-        } else {
-            echo "{$this->name} is already ON.\n";
-        }
-    }
-
-    public function turnOff() {
-        if ($this->isOn) {
-            $this->isOn = false;
-            echo "{$this->name} is now OFF.\n";
-        } else {
-            echo "{$this->name} is already OFF.\n";
-        }
-    }
-
-    public function chargeBattery($amount) {
-        if ($amount < 0) {
-            echo "Cannot charge with a negative amount.\n";
-            return;
-        }
-        $this->batteryLevel += $amount;
-        if ($this->batteryLevel > 100) {
-            $this->batteryLevel = 100; // Cap at 100%
-        }
-        echo "{$this->name} battery charged to {$this->batteryLevel}%.\n";
-    }
-
-    public function getStatus() {
-        $status = $this->isOn ? "ON" : "OFF";
-        echo "Robot Name: {$this->name}\n";
-        echo "Model: {$this->model}\n";
-        echo "Year: {$this->year}\n";
-        echo "Color: {$this->color}\n";
-        echo "Serial Number: {$this->serialNumber}\n";
-        echo "Status: {$status}\n";
-        echo "Battery Level: {$this->batteryLevel}%\n";
-    }
-
     public function getId() {
         return $this->id;
     }

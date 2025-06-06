@@ -7,6 +7,7 @@ error_reporting(E_ALL);
 
 require_once __DIR__ . "/../vendor/autoload.php";
 require_once __DIR__ . "/../model/robot.php";
+require_once "../conn/conn.php";
 
 use FastRoute\RouteCollector;
 use function FastRoute\simpleDispatcher;
@@ -45,30 +46,42 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
                     'method' => 'DELETE',
                     'path' => '/robots/{id}',
                     'description' => 'Remove um robô.'
-                ]
-                ]
-        ]);
-    });
-
+                    ]
+                    ]
+                ]);
+            });
+            
     $r->addRoute('GET', '/all-robots', function () {
         header('Content-Type: application/json; charset=UTF-8');
-    
-        $robots = [
-            new Robot(1, "Robo1", "ModelX", 2023, "Red", "SN123456"), 
-            new Robot(2, "Robo2", "ModelY", 2024, "Blue", "SN654321"),
-            new Robot(3, "Robo3", "ModelZ", 2022, "Green", "SN789012"),
-            new Robot(4, "Robo4", "ModelA", 2021, "Yellow", "SN345678"),
-            new Robot(5, "Robo5", "ModelB", 2020, "Black", "SN901234"),
-            new Robot(6, "Robo6", "ModelC", 2019, "White", "SN567890"),
-            new Robot(7, "Robo7", "ModelD", 2018, "Silver", "SN123789"),
-            new Robot(8, "Robo8", "ModelE", 2017, "Gold", "SN456123"),
-            new Robot(9, "Robo9", "ModelF", 2016, "Purple", "SN789456")
-            
-        ];
+        
+        $pdo = (new Conn())->getConnection();
+        $query = "SELECT * FROM robots";
+        $stmt = $pdo->prepare($query);
+        $stmt->execute();
+        $robots = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if (!$robots) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Nenhum robô encontrado.'
+        ]);
+        return;
+        }
+
+        $robotObjects = [];
+        foreach ($robots as $robot) {
+            $robotObjects[] = new Robot(
+                $robot['id'],
+                $robot['name'],
+                $robot['model'],
+                $robot['year'],
+                $robot['color'],
+                $robot['serial_number']
+            );
+        }
     
         $robotData = [];
     
-        foreach ($robots as $robot) {
+        foreach ($robotObjects as $robot) {
             $robotData[] = [
                 'id' => $robot->getId(),
                 'name' => $robot->getName(),
@@ -80,7 +93,7 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
                 'batteryLevel' => $robot->getBatteryLevel()
             ];
         }
-    
+        header('Content-Type: application/json; charset=UTF-8');
         echo json_encode([
             'status' => 'success',
             'message' => 'Lista de todos os robôs.',
