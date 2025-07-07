@@ -216,6 +216,20 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
         }
     });
 
+    $r->addRoute('DELETE', '/robots/{id:\d+}', function ($id) {
+        header('Content-Type: application/json; charset=UTF-8');
+        
+        $pdo = (new Conn())->getConnection();
+        $query = "DELETE FROM robots WHERE id = ?";
+        $stmt = $pdo->prepare($query);
+        if ($stmt->execute([$id])) {
+            echo json_encode(['status' => 'success', 'message' => 'Robô removido com sucesso.']);
+        } else {
+            http_response_code(500);
+            echo json_encode(['status' => 'error', 'message' => 'Erro ao remover o robô.']);
+        }
+    });
+
 });
 
 // Captura a URI e o método HTTP
