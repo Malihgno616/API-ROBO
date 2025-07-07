@@ -178,6 +178,44 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
             ]
         ]);
     });
+
+    $r->addRoute('PUT', '/robots/{id:\d+}', function ($id) {
+        header('Content-Type: application/json; charset=UTF-8');
+        $data = json_decode(file_get_contents('php://input'), true);
+        
+        if (!isset($data['name'], $data['model'], $data['year'], $data['color'], $data['serialNumber'])) {
+            http_response_code(400);
+            echo json_encode(['status' => 'error', 'message' => 'Dados incompletos para atualizar o robô.']);
+            return;
+        }
+
+        $robot = new Robot(
+            $id,
+            $data['name'],
+            $data['model'],
+            $data['year'],
+            $data['color'],
+            $data['serialNumber']
+        );
+
+        $pdo = (new Conn())->getConnection();
+        $query = "UPDATE robots SET name = ?, model = ?, year = ?, color = ?, serial_number = ? WHERE id = ?";
+        $stmt = $pdo->prepare($query);
+        if ($stmt->execute([
+            $robot->getName(),
+            $robot->getModel(),
+            $robot->getYear(),
+            $robot->getColor(),
+            $robot->getSerialNumber(),
+            $robot->getId()
+        ])) {
+            echo json_encode(['status' => 'success', 'message' => 'Robô atualizado com sucesso.']);
+        } else {
+            http_response_code(500);
+            echo json_encode(['status' => 'error', 'message' => 'Erro ao atualizar o robô.']);
+        }
+    });
+
 });
 
 // Captura a URI e o método HTTP
