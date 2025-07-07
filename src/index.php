@@ -100,7 +100,44 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
             'data' => $robotData
         ]);
     });
-       
+    
+    $r->addRoute('POST', '/robots/create', function () {
+        header('Content-Type: application/json; charset=UTF-8');
+        $data = json_decode(file_get_contents('php://input'), true);
+        
+        if (!isset($data['name'], $data['model'], $data['year'], $data['color'], $data['serialNumber'])) {
+            http_response_code(400);
+            echo json_encode(['status' => 'error', 'message' => 'Dados incompletos para criar o robô.']);
+            return;
+        }
+
+        $robot = new Robot(
+            null, // ID será gerado pelo banco de dados
+            $data['name'],
+            $data['model'],
+            $data['year'],
+            $data['color'],
+            $data['serialNumber']
+        );
+
+        $pdo = (new Conn())->getConnection();
+        $query = "INSERT INTO robots (name, model, year, color, serial_number) VALUES (?, ?, ?, ?, ?)";
+        $stmt = $pdo->prepare($query);
+        if ($stmt->execute([
+            $robot->getName(),
+            $robot->getModel(),
+            $robot->getYear(),
+            $robot->getColor(),
+            $robot->getSerialNumber()
+        ])) {
+            http_response_code(201);
+            echo json_encode(['status' => 'success', 'message' => 'Robô criado com sucesso.']);
+        } else {
+            http_response_code(500);
+            echo json_encode(['status' => 'error', 'message' => 'Erro ao criar o robô.']);
+        }
+    });
+
 });
 
 // Captura a URI e o método HTTP
