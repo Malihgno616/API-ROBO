@@ -15,7 +15,7 @@ use App\Robot\Robot;
 
 // Define as rotas
 $dispatcher = simpleDispatcher(function (RouteCollector $r) {
-    $r->addRoute('GET', '/', function () {
+    $r->addRoute('GET', '/all-routes', function () {
         header('Content-Type: application/json; charset=UTF-8');
         echo json_encode([
             'status' => 'success',
