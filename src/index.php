@@ -138,6 +138,46 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
         }
     });
 
+    $r->addRoute('GET', '/robots/{id:\d+}', function ($id) {
+        header('Content-Type: application/json; charset=UTF-8');
+        
+        $pdo = (new Conn())->getConnection();
+        $query = "SELECT * FROM robots WHERE id = ?";
+        $stmt = $pdo->prepare($query);
+        $stmt->execute([$id]);
+        $robot = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$robot) {
+            http_response_code(404);
+            echo json_encode(['status' => 'error', 'message' => 'Robô não encontrado.']);
+            return;
+        }
+
+        $robotObject = new Robot(
+            $robot['id'],
+            $robot['name'],
+            $robot['model'],
+            $robot['year'],
+            $robot['color'],
+            $robot['serial_number']
+        );
+
+        header('Content-Type: application/json; charset=UTF-8');
+        echo json_encode([
+            'status' => 'success',
+            'message' => 'Detalhes do robô.',
+            'data' => [
+                'id' => $robotObject->getId(),
+                'name' => $robotObject->getName(),
+                'model' => $robotObject->getModel(),
+                'year' => $robotObject->getYear(),
+                'color' => $robotObject->getColor(),
+                'serialNumber' => $robotObject->getSerialNumber(),
+                'isOn' => $robotObject->isOn(),
+                'batteryLevel' => $robotObject->getBatteryLevel()
+            ]
+        ]);
+    });
 });
 
 // Captura a URI e o método HTTP
